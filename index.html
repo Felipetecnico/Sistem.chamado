@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Chamados de TI</title>
+    <style>
+        /* Seu CSS aqui */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #333;
+        }
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .kanban {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+        }
+        .kanban-column {
+            width: 30%;
+            padding: 10px;
+            background-color: #e2e3e5;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .kanban-column h3 {
+            text-align: center;
+            color: #333;
+        }
+        .ticket {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Sistema de Chamados de TI</h1>
+</header>
+
+<!-- Formulário para Criar Chamado -->
+<div class="container">
+    <h2>Abrir Novo Chamado</h2>
+    <form id="formChamado">
+        <label for="categoria">Categoria do Chamado:</label>
+        <select id="categoria" name="categoria" required>
+            <option value="problema_rede">Problema de Rede</option>
+            <option value="problema_software">Problema de Software</option>
+            <option value="problema_hardware">Problema de Hardware</option>
+        </select>
+
+        <label for="descricao">Descrição do Chamado:</label>
+        <textarea id="descricao" name="descricao" rows="4" required></textarea>
+
+        <label for="emailTecnico">E-mail do Técnico:</label>
+        <input type="email" id="emailTecnico" name="emailTecnico" required>
+
+        <label for="emailCliente">Seu E-mail:</label>
+        <input type="email" id="emailCliente" name="emailCliente" required>
+
+        <button type="submit">Abrir Chamado</button>
+    </form>
+
+    <div class="status" id="statusChamado" style="display: none;">
+        <p>Chamado aberto com sucesso! Em breve entraremos em contato.</p>
+    </div>
+
+    <div class="status" id="statusErro" style="display: none; color: red;">
+        <p>Erro ao abrir o chamado. Tente novamente mais tarde.</p>
+    </div>
+</div>
+
+<!-- Pesquisa de Satisfação -->
+<div class="container">
+    <h2>Pesquisa de Satisfação</h2>
+    <p>Após a resolução do seu chamado, por favor, nos avalie clicando no link abaixo:</p>
+    <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSeV3-_za4-4-v2eovHSLDTywFxTaLyyfCcanXNelnF3ExZbgA/viewform?usp=sharing')">Pesquisa de Satisfação</button>
+</div>
+
+<!-- Kanban -->
+<div class="kanban">
+    <div class="kanban-column" id="kanbanNovo">
+        <h3>Novos Chamados</h3>
+    </div>
+
+    <div class="kanban-column" id="kanbanAndamento">
+        <h3>Em Andamento</h3>
+    </div>
+
+    <div class="kanban-column" id="kanbanResolvido">
+        <h3>Resolvido</h3>
+    </div>
+</div>
+
+<!-- EmailJS script -->
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+<script>
+    // Initialize EmailJS
+    emailjs.init('YOUR_USER_ID');  // Substitua 'YOUR_USER_ID' pelo seu User ID do EmailJS
+
+    // Sistema de Abertura de Chamado
+    document.getElementById('formChamado').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const categoria = document.getElementById('categoria').value;
+        const descricao = document.getElementById('descricao').value;
+        const emailTecnico = document.getElementById('emailTecnico').value;
+        const emailCliente = document.getElementById('emailCliente').value;
+
+        // Dados do chamado
+        const chamadoData = {
+            categoria: categoria,
+            descricao: descricao,
+            emailTecnico: emailTecnico,
+            emailCliente: emailCliente
+        };
+
+        // Enviar email para o técnico usando o EmailJS
+        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', chamadoData)
+            .then(function(response) {
+                console.log('Chamado enviado com sucesso:', response);
+                document.getElementById('statusChamado').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('statusChamado').style.display = 'none';
+                }, 5000);  // Status desaparece após 5 segundos
+
+                // Cria um ticket no Kanban
+                const ticket = document.createElement('div');
+                ticket.classList.add('ticket');
+                ticket.innerHTML = `
+                    <h4>${categoria}</h4>
+                    <p><strong>Descrição:</strong> ${descricao}</p>
+                    <p><strong>Técnico:</strong> ${emailTecnico}</p>
+                    <p><strong>Cliente:</strong> ${emailCliente}</p>
+                `;
+                document.getElementById('kanbanNovo').appendChild(ticket);
+
+                // Limpa o formulário
+                document.getElementById('formChamado').reset();
+            }, function(error) {
+                console.log('Erro ao enviar o chamado:', error);
+                document.getElementById('statusErro').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('statusErro').style.display = 'none';
+                }, 5000);
+            });
+    });
+</script>
+
+</body>
+</html>
